@@ -14,7 +14,7 @@ type Container struct {
 //Register app container
 func Register() *Container {
 	container := &Container{
-		CodeInformation: codeinformation.NewApp(),
+		// CodeInformation: codeinformation.NewApp(),
 	}
 	log.Println("Registered -> App")
 	return container

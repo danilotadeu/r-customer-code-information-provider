@@ -1,11 +1,13 @@
 package codeinformation
 
 import (
+	"encoding/xml"
 	"io/ioutil"
 	"log"
 	"net/http"
 
 	"github.com/danilotadeu/r-customer-code-information-provider/app"
+	codeinformationModel "github.com/danilotadeu/r-customer-code-information-provider/model/codeinformation"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -19,17 +21,28 @@ func NewAPI(g fiber.Router, apps *app.Container) {
 		apps: apps,
 	}
 
-	g.Get("/", api.CodeInformation)
+	g.Post("/", api.CodeInformationProviderHandler)
 }
 
-func (p *apiImpl) CodeInformation(c *fiber.Ctx) error {
+func (p *apiImpl) CodeInformationProviderHandler(c *fiber.Ctx) error {
+	requestCodeInformation := new(codeinformationModel.CustomerRetrieveRequest)
+	if err := c.BodyParser(requestCodeInformation); err != nil {
+		log.Println("api.codeinformation.codeinformation.codeinformation.body_parser", err.Error())
+		return err
+	}
+
+	if requestCodeInformation.Header.Security.UsernameToken.Username == "" ||
+		requestCodeInformation.Header.Security.UsernameToken.Password.Type == "" {
+		responseErr := codeinformationModel.CodeInformationResponseError{}
+		responseErr.Body.Fault.Faultcode.Text = "ns0:CMS.RC6701"
+		body, _ := xml.Marshal(responseErr)
+
+		return c.Status(http.StatusBadRequest).Type("xml").SendString(string(body))
+	}
 	b, err := ioutil.ReadFile("response.xml")
-	/*
-		TODO: Receber XML da request e tratar os erros da request
-		TODO: Logar erros
-	*/
 	if err != nil {
-		log.Fatal(err)
+		log.Println("api.codeinformation.codeinformation.codeinformation.ioutil_readfile", err.Error())
+		return err
 	}
 
 	return c.Status(http.StatusOK).Type("xml").SendString(string(b))
