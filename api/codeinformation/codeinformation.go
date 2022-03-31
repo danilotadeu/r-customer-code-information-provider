@@ -34,7 +34,8 @@ func (p *apiImpl) CodeInformationProviderHandler(c *fiber.Ctx) error {
 	if requestCodeInformation.Header.Security.UsernameToken.Username == "" ||
 		requestCodeInformation.Header.Security.UsernameToken.Password.Type == "" {
 		responseErr := codeinformationModel.CodeInformationResponseError{}
-		responseErr.Body.Fault.Faultcode.Text = "ns0:CMS.RC6701"
+		responseErr.Body.Fault.Faultstring.Text = "No customer with id 54.033.310 exists in the database."
+		responseErr.Body.Fault.Faultcode.Ns0 = "ns0:CMS.RC6701"
 		body, _ := xml.Marshal(responseErr)
 
 		return c.Status(http.StatusBadRequest).Type("xml").SendString(string(body))
